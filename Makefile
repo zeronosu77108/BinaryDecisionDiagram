@@ -1,4 +1,4 @@
-CPLUSFLAGS = -g
+CPLUSFLAGS = -g -std=c++14 
 
 all: BDD.o test_BDD
 
