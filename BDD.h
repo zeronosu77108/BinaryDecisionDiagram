@@ -26,33 +26,61 @@ class Node {
                 Node *_low,
                 Node *_high);
 
+        Node operator !();
+        Node operator ^(Node &);
+        Node operator ==(Node &);
+        Node operator &(Node &);
+        Node operator |(Node &);
+        
+
         inline Node &operator=(Node &x);
+
 
         friend class BDD;
         
         BDD *bdd;
         unsigned int var, node_number, reference_counter;
-        std::vector<Node> parent;
+        std::vector<Node*> parents;
+
+        inline bool is_constant() const;
+        inline bool is_true() const;
+        inline bool is_false() const;
+
+        inline void add_parent(Node *_parent);
+        inline void remove_parent(Node *_parent);
+        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
 
 };
 
 class BDD {
-    friend class Node;
     public:
         BDD();
         ~BDD();
 
-        Node Var(const std::string &label);
+        Node* Var(const std::string &label);
 
         void DumpDot(std::ostream &out) const;
+        void DumpDot2(std::ostream &out) const;
+        void DumpDot2_2(std::ostream &out, Node *node) const;
+        void Pass(std::ostream &out) const;
+        void Pass_2(std::ostream &out, Node *node,std::string str) const;
+        void Tail_Pass(std::ostream &out) const;
+        void Tail_Pass2(std::ostream &out, Node *node, std::string str,const Node *child) const;
+        void Tail_DumpDot(std::ostream &out) const;
+        void Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
 
         inline const BDD &True();
         inline const BDD &False();
+        inline void add_root(Node *_root) ;
+        inline void remove_root(Node *_root) ;
 
-    protected:
+        friend class Node;
+
+    // protected:
         typedef std::list<Node> nodest;
-        nodest nodes;
         Node true_bdd, false_bdd;
+        nodest nodes;
+        std::vector<Node *> roots;
 
         struct var_table_entryt {
             std::string label;
@@ -65,7 +93,7 @@ class BDD {
         struct reverse_keyt {
             unsigned var, low, high;
             inline reverse_keyt(
-                    unsigned int _var, Node *_low, Node *high);
+                    unsigned int _var, Node &_low, Node &high);
         };
 
         typedef std::map<reverse_keyt, Node*> reverse_mapt;
@@ -74,11 +102,17 @@ class BDD {
         friend bool operator < (const reverse_keyt &x, const reverse_keyt &y);
 
         Node* make(unsigned int var, Node *low, Node *high);
-        friend BDD apply(bool (*fkt)(bool x, bool y), BDD &x, BDD &y);
+        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
 
 };
 
-BDD apply(bool (*fkt)(bool x, bool y), const BDD &x, const BDD &y);
+// BDD apply(bool (*fkt)(bool x, bool y), const BDD &x, const BDD &y);
+Node* Not(Node *x);
+Node* And(Node *x, Node *y);
+Node* Or(Node *x, Node *y);
+
+#define forall_nodes(it) for(nodest::const_iterator it=nodes.begin(); \
+        it!=nodes.end(); it++)
 
 // inline functions
 #include "BDD.inc"
