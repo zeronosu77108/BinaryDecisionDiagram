@@ -29,11 +29,17 @@ std::vector< std::vector<std::string> > split(std::string str) {
     return exp;
 }
 
-void test(std::vector< std::vector<std::string> > exp, std::ostream &out) {
+void test(std::vector<std::string> orders, std::vector< std::vector<std::string> > exp, std::ostream &out) {
     BDD bdd;
-
     std::map<std::string, Node*> mp;
     std::vector<Node *> ors;
+
+    for( auto pr : orders ) {
+        if( mp.count(pr) == 0 ) {
+            mp[pr] = bdd.Var(pr);
+        }
+    }
+
     for( auto ex : exp ) {
         bool f = true;
         for( auto e : ex ) {
@@ -56,25 +62,15 @@ void test(std::vector< std::vector<std::string> > exp, std::ostream &out) {
     bdd.Tail_Pass(out);
     // bdd.Tail_DumpDot(out);
 }
-               
-void test2() {
-    BDD bdd;
-    Node *A = bdd.Var("A");
-    Node *B = bdd.Var("B");
-    Node *C = bdd.Var("C");
-
-    Node * final = And( And(A,B), Not(C));
-
-    bdd.Tail_DumpDot(std::cout);
-}
-           
-
 
 int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
+    std::vector<std::string> orders;
     std::string str = argv[1];
+
     std::ofstream outputfile(argv[2]);
     std::ofstream timefile(argv[3]);
+
     std::chrono::system_clock::time_point start, end;
 
     exp = split(str);
@@ -82,7 +78,7 @@ int main(int argc, char *argv[], char *envp[]) {
 
     start = std::chrono::system_clock::now();
 
-    test(exp,outputfile);
+    test(orders,exp,outputfile);
     end = std::chrono::system_clock::now();
 
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
