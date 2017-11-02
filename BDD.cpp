@@ -133,7 +133,7 @@ void BDD::Count_Path(std::ostream &out) const {
 void BDD::Count_Path2(std::ostream &out, Node *node, int *n) const {
 
     if( node->parents.size() <= 0) {
-        *n += 1;
+        (*n)++;
         return;
     }
 
