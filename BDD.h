@@ -66,6 +66,8 @@ class BDD {
         void Pass_2(std::ostream &out, Node *node,std::string str) const;
         void Tail_Pass(std::ostream &out) const;
         void Tail_Pass2(std::ostream &out, Node *node, std::string str,const Node *child) const;
+        void Count_Path(std::ostream &out) const;
+        void Count_Path2(std::ostream &out, Node *node, int *n) const;
         void Tail_DumpDot(std::ostream &out) const;
         void Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
 

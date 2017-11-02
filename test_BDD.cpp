@@ -1,11 +1,18 @@
 #include <iostream>
 #include <map>
-#include <vector>
+#include <vector> 
 #include <algorithm>
 #include <fstream>
 #include <chrono>
 
 #include "BDD.h"
+
+void print_vec(std::vector<std::string> str){
+    for( auto s : str ) {
+        std::cout << s << " ";
+    }
+    // std::cout << std::endl;
+}
 
 std::vector< std::vector<std::string> > split(std::string str) {
     std::vector< std::vector<std::string> >  exp;
@@ -28,6 +35,7 @@ std::vector< std::vector<std::string> > split(std::string str) {
     }   
     return exp;
 }
+
 
 void test(std::vector<std::string> orders, std::vector< std::vector<std::string> > exp, std::ostream &out) {
     BDD bdd;
@@ -59,30 +67,49 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     for(int i=1; i<ors.size(); i++){
         final = And(final, ors[i]);
     }
-    bdd.Tail_Pass(out);
+    // bdd.Tail_Pass(out);
+    bdd.Count_Path(out);
     // bdd.Tail_DumpDot(out);
+}
+
+
+void count_path(int n, std::vector< std::vector<std::string> > exp, std::ostream &out) {
+    std::vector<std::string> orders;
+
+    for(int i=1; i<=n; i++) {
+        orders.push_back( "P" + std::to_string(i) ); 
+    }
+
+    while (next_permutation(orders.begin(), orders.end())) {
+        print_vec(orders);
+        std::chrono::system_clock::time_point start, end;
+
+        start = std::chrono::system_clock::now();
+        test(orders,exp,out);
+        end = std::chrono::system_clock::now();
+
+        double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+        std::cout << " " << elapsed << "ms" << std::endl;;
+
+    }
 }
 
 int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
     std::vector<std::string> orders;
+
+    int n = 10;
     std::string str = argv[1];
+    // std::ofstream outputfile(argv[2]);
+    // std::ofstream timefile(argv[3]);
 
-    std::ofstream outputfile(argv[2]);
-    std::ofstream timefile(argv[3]);
-
-    std::chrono::system_clock::time_point start, end;
 
     exp = split(str);
 
 
-    start = std::chrono::system_clock::now();
 
-    test(orders,exp,outputfile);
-    end = std::chrono::system_clock::now();
+    count_path(n,exp,std::cout);
+    // test(orders,exp,outputfile);
 
-    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
-
-    timefile << elapsed << "ms";
 }
 
