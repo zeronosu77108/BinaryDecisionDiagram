@@ -96,10 +96,10 @@ void count_path(int n, std::vector< std::vector<std::string> > exp, std::ostream
 
 int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
-    std::vector<std::string> orders;
+    // std::vector<std::string> orders;
     // std::vector<std::string> orders = { "P3","P4","P6","P8","P10","P2","P5","P9","P1","P7" };
     // std::vector<std::string> orders = {"P10","P5","P3","P2","P6","P9","P7","P8","P4","P1"}; 
-    // std::vector<std::string> orders = {"P10","P2","P3","P4","P5","P9","P8","P1","P6","P7"};
+    std::vector<std::string> orders = {"P3","P4","P1","P9","P2","P10","P5","P6","P8","P7"};
 
     int n = 10;
     std::string str = argv[1];
@@ -111,8 +111,8 @@ int main(int argc, char *argv[], char *envp[]) {
 
 
 
-    count_path(n,exp,std::cout);
-    // test(orders,exp,outputfile);
+    // count_path(n,exp,std::cout);
+    test(orders,exp,outputfile);
 
 }
 
