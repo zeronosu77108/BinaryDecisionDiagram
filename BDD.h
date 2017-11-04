@@ -61,14 +61,14 @@ class BDD {
 
         void DumpDot(std::ostream &out) const;
         void DumpDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
-        void Path(std::ostream &out) const;
-        void Path_2(std::ostream &out, Node *node, std::string str) const;
-        void Tail_Path(std::ostream &out) const;
-        void Tail_Path2(std::ostream &out, Node *node, std::string str,const Node *child) const;
-        void Count_Path(std::ostream &out) const;
-        void Count_Path2(std::ostream &out, Node *node, int *n) const;
-        void Tail_DumpDot(std::ostream &out) const;
-        void Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
+        void DumpPath(std::ostream &out) const;
+        void DumpPath_2(std::ostream &out, Node *node, std::string str) const;
+        void DumpTailPath(std::ostream &out) const;
+        void DumpTailPath2(std::ostream &out, Node *node, std::string str,const Node *child) const;
+        void DumpCountPath(std::ostream &out) const;
+        void _DumpCountPath(Node *node, int *n) const;
+        void DumpTailDot(std::ostream &out) const;
+        void DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
 
         inline const BDD &True();
         inline const BDD &False();

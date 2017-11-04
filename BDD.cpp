@@ -99,20 +99,20 @@ void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) co
 }
 
 
-void BDD::Path(std::ostream &out) const {
+void BDD::DumpPath(std::ostream &out) const {
 
     for(auto root : roots) {
-        Path_2(out, root, "");
+        DumpPath_2(out, root, "");
     }
 }
 
-void BDD::Path_2(std::ostream &out, Node *node, std::string str) const {
+void BDD::DumpPath_2(std::ostream &out, Node *node, std::string str) const {
     if(node->low!=NULL) {
-        Path_2(out, node->low, str);
+        DumpPath_2(out, node->low, str);
         // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
     }
     if(node->high!=NULL) {
-        Path_2(out, node->high,
+        DumpPath_2(out, node->high,
                 var_table[node->var-1].label + " " + str);
         return;
     }
@@ -120,14 +120,34 @@ void BDD::Path_2(std::ostream &out, Node *node, std::string str) const {
     if(node->node_number==1)
         out << str << std::endl;
 }
+void BDD::DumpCountPath(std::ostream &out) const {
+    int n = 0;
+    for(auto root : roots) {
+        _DumpCountPath(root, &n);
+    }
+    out << n << " ";
+}
 
-void BDD::Tail_Path(std::ostream &out) const {
-    for( auto parent : true_bdd.parents ) {
-        Tail_Path2(out, parent, "", &true_bdd);
+void BDD::_DumpCountPath(Node *node, int *n) const {
+    if(node->low!=NULL) {
+        _DumpCountPath(node->low, n);
+    }
+    if(node->high!=NULL) {
+        _DumpCountPath(node->high, n);
+    }
+
+    if(node->node_number==1) {
+        *n = *n + 1;
     }
 }
 
-void BDD::Tail_Path2(std::ostream &out, Node *node, std::string str,const Node *child) const {
+void BDD::DumpTailPath(std::ostream &out) const {
+    for( auto parent : true_bdd.parents ) {
+        DumpTailPath2(out, parent, "", &true_bdd);
+    }
+}
+
+void BDD::DumpTailPath2(std::ostream &out, Node *node, std::string str,const Node *child) const {
     if( node->low == child) {
         // str = var_table[node->var-1].label + "'" + str;
     } else {
@@ -140,12 +160,12 @@ void BDD::Tail_Path2(std::ostream &out, Node *node, std::string str,const Node *
     }
 
     for( auto parent : node->parents) {
-        Tail_Path2(out, parent, str, node);
+        DumpTailPath2(out, parent, str, node);
     }
 }
 
 
-void BDD::Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
+void BDD::DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
     auto itr = std::find(done->begin(), done->end(), node);
 
     if( itr == done->end() ) {
@@ -169,7 +189,7 @@ void BDD::Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done
     }
 
     for( auto parent : node->parents) {;
-        Tail_DumpDot2(out, parent, done, node);
+        DumpTailDot2(out, parent, done, node);
     }
 }
 
@@ -235,10 +255,10 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
     
     Node *u;
 
-    if( flag && x->low != NULL ) { x->low->remove_parent(x); }
-    if( flag && x->high != NULL ) { x->high->remove_parent(x); }
-    if( y->low != NULL ) { y->low->remove_parent(y);  }
-    if( y->high != NULL ) { y->high->remove_parent(y); }
+    // if( flag && x->low != NULL ) { x->low->remove_parent(x); }
+    // if( flag && x->high != NULL ) { x->high->remove_parent(x); }
+    // if( y->low != NULL ) { y->low->remove_parent(y);  }
+    // if( y->high != NULL ) { y->high->remove_parent(y); }
 
     // 両方定数ノード
     if( fkt == or_fkt && ( x->is_true() || y->is_true()) ) {
@@ -264,12 +284,12 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
                 );  
     }   
 
-    if( u->low != NULL ) { 
-        u->low->add_parent(u);
-    }   
-    if( u->high != NULL ) { 
-        u->high->add_parent(u);
-    }   
+    // if( u->low != NULL ) { 
+    //     u->low->add_parent(u);
+    // }   
+    // if( u->high != NULL ) { 
+    //     u->high->add_parent(u);
+    // }   
 
     // std::clog << "u:" << u << std::endl;
     return u;

@@ -67,11 +67,11 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     for(int i=1; i<ors.size(); i++){
         final = And(final, ors[i]);
     }
-    // bdd.Pass(out);
+    // bdd.DumpPass(out);
     // bdd.Tail_Pass(out);
-    // bdd.Count_Path(out);
+    bdd.DumpCountPath(out);
     // bdd.Tail_DumpDot(out);
-    bdd.DumpDot(out);
+    // bdd.DumpDot(out);
 }
 
 
