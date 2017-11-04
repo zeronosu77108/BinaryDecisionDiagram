@@ -99,20 +99,20 @@ void BDD::DumpDot2_2(std::ostream &out,Node *node, std::vector<Node *> *done ) c
 }
 
 
-void BDD::Pass(std::ostream &out) const {
+void BDD::Path(std::ostream &out) const {
 
     for(auto root : roots) {
-        Pass_2(out, root, "");
+        Path_2(out, root, "");
     }
 }
 
-void BDD::Pass_2(std::ostream &out, Node *node, std::string str) const {
+void BDD::Path_2(std::ostream &out, Node *node, std::string str) const {
     if(node->low!=NULL) {
-        Pass_2(out, node->low, str);
-        // Pass_2(out, node->low, done, var_table[node->var-1].label + " " + str);
+        Path_2(out, node->low, str);
+        // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
     }
     if(node->high!=NULL) {
-        Pass_2(out, node->high,
+        Path_2(out, node->high,
                 var_table[node->var-1].label + " " + str);
         return;
     }
@@ -121,13 +121,13 @@ void BDD::Pass_2(std::ostream &out, Node *node, std::string str) const {
         out << str << std::endl;
 }
 
-void BDD::Tail_Pass(std::ostream &out) const {
+void BDD::Tail_Path(std::ostream &out) const {
     for( auto parent : true_bdd.parents ) {
-        Tail_Pass2(out, parent, "", &true_bdd);
+        Tail_Path2(out, parent, "", &true_bdd);
     }
 }
 
-void BDD::Tail_Pass2(std::ostream &out, Node *node, std::string str,const Node *child) const {
+void BDD::Tail_Path2(std::ostream &out, Node *node, std::string str,const Node *child) const {
     if( node->low == child) {
         // str = var_table[node->var-1].label + "'" + str;
     } else {
@@ -140,7 +140,7 @@ void BDD::Tail_Pass2(std::ostream &out, Node *node, std::string str,const Node *
     }
 
     for( auto parent : node->parents) {
-        Tail_Pass2(out, parent, str, node);
+        Tail_Path2(out, parent, str, node);
     }
 }
 
