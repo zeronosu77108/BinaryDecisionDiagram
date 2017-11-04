@@ -144,28 +144,6 @@ void BDD::Tail_Pass2(std::ostream &out, Node *node, std::string str,const Node *
     }
 }
 
-
-void BDD::Count_Path(std::ostream &out) const {
-    int n=0;
-    for( auto parent : true_bdd.parents ) {
-        Count_Path2(out, parent, &n);
-    }
-    out << n << " ";
-}
-
-void BDD::Count_Path2(std::ostream &out, Node *node, int *n) const {
-
-    if( node->parents.size() <= 0) {
-        // (*n)++;
-        *n = (*n) + 1;
-        return;
-    }
-
-    for( auto parent : node->parents) {
-        Count_Path2(out, parent, n);
-    }
-}
-
 void BDD::Tail_DumpDot(std::ostream &out) const {
     out << "digraph BDD {" << std::endl;
 
