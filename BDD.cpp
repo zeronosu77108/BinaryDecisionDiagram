@@ -37,6 +37,8 @@ BDD::BDD() {
 BDD::~BDD() {
 }
 void BDD::DumpDot2(std::ostream &out) const {
+    std::vector<Node *> done;
+
     out << "digraph BDD {" << std::endl;
 
     out << "center = true;" << std::endl;
@@ -46,38 +48,59 @@ void BDD::DumpDot2(std::ostream &out) const {
     out << "  { node [shape=box,fontsize=24]; \"1\"; }" << std::endl
         << std::endl;
 
+    std::string str;
+    bool f = false;
+    for( auto v : var_table ) {
+        if(f){
+            str += "->";
+        }
+        f=true;
+        out << v.label << "[style=invis];";
+        str += v.label;
+    }
+    out << std::endl << str << "[style=invis]" << std::endl;;
+
     for(auto root : roots){
-        DumpDot2_2(out,root);
+        DumpDot2_2(out,root,&done);
     }
 
     out << "}" << std::endl;
 }
 
-void BDD::DumpDot2_2(std::ostream &out,Node *node) const {
-    if( node->low!=NULL||node->high!=NULL){
-        out << node->node_number << "[label=\""
-            << var_table[node->var-1].label << "\"]"
-            << std::endl;
-    }
+void BDD::DumpDot2_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
+    auto itr = std::find(done->begin(), done->end(), node);
 
-    if( node->low != NULL){
-        out << node->node_number << "->"
-            << node->low->node_number
-            << "[style=dashed];"
-            << std::endl; 
-        DumpDot2_2(out, node->low);
-    }
-    if( node->high != NULL){
-        out << node->node_number << "->"
-            << node->high->node_number
-            << std::endl; 
-        DumpDot2_2(out,node->high);
-    }
+    if( itr == done->end() ) {
+        done->push_back(node);
+        if( node->low!=NULL||node->high!=NULL){
+            out << node->node_number << "[label=\""
+                << var_table[node->var-1].label << "\"]"
+                << std::endl;
 
+            out << "{rank=same; " << var_table[node->var-1].label << "; "
+                << node->node_number << ";}"
+                << std::endl;
+        }
+
+        if( node->low != NULL){
+            out << node->node_number << "->"
+                << node->low->node_number
+                << "[style=dashed];"
+                << std::endl; 
+            DumpDot2_2(out, node->low, done);
+        }
+        if( node->high != NULL){
+            out << node->node_number << "->"
+                << node->high->node_number
+                << std::endl; 
+            DumpDot2_2(out,node->high, done);
+        }
+    }
 }
 
 
 void BDD::Pass(std::ostream &out) const {
+
     for(auto root : roots) {
         Pass_2(out, root, "");
     }
@@ -85,12 +108,12 @@ void BDD::Pass(std::ostream &out) const {
 
 void BDD::Pass_2(std::ostream &out, Node *node, std::string str) const {
     if(node->low!=NULL) {
-        Pass_2(out, node->low,
-                var_table[node->var-1].label + "'" + str);
+        Pass_2(out, node->low, str);
+        // Pass_2(out, node->low, done, var_table[node->var-1].label + " " + str);
     }
     if(node->high!=NULL) {
         Pass_2(out, node->high,
-                var_table[node->var-1].label + str);
+                var_table[node->var-1].label + " " + str);
         return;
     }
 
@@ -179,7 +202,7 @@ void BDD::Tail_DumpDot(std::ostream &out) const {
 
 void BDD::Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
     auto itr = std::find(done->begin(), done->end(), node);
-    
+
     if( itr == done->end() ) {
         done->push_back(node);
         out << node->node_number << "[label=\""
@@ -334,9 +357,9 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
 
     // 両方定数ノード
     if( fkt == or_fkt && ( x->is_true() || y->is_true()) ) {
-        u = &bdd->true_bdd;
+        u = &(bdd->true_bdd);
     } else if( fkt == and_fkt && ( x->is_false() || y->is_false()) ) {
-        u = &bdd->false_bdd;
+        u = &(bdd->false_bdd);
     } else if(x->is_constant() && y->is_constant()) {
         u=&(fkt(x->is_true(), y->is_true())? bdd->true_bdd : bdd->false_bdd);
     } else if(x->var==y->var) {
