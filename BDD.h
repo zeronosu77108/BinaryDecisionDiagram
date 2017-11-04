@@ -48,7 +48,7 @@ class Node {
 
         inline void add_parent(Node *_parent);
         inline void remove_parent(Node *_parent);
-        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
+        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y);
 
 };
 
@@ -63,12 +63,8 @@ class BDD {
         void DumpDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
         void DumpPath(std::ostream &out) const;
         void DumpPath_2(std::ostream &out, Node *node, std::string str) const;
-        void DumpTailPath(std::ostream &out) const;
-        void DumpTailPath2(std::ostream &out, Node *node, std::string str,const Node *child) const;
         void DumpCountPath(std::ostream &out) const;
         void _DumpCountPath(Node *node, int *n) const;
-        void DumpTailDot(std::ostream &out) const;
-        void DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
 
         inline const BDD &True();
         inline const BDD &False();

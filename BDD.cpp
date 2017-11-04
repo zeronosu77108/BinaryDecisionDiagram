@@ -36,6 +36,7 @@ BDD::BDD() {
 
 BDD::~BDD() {
 }
+
 void BDD::DumpDot(std::ostream &out) const {
     std::vector<Node *> done;
 
@@ -141,58 +142,6 @@ void BDD::_DumpCountPath(Node *node, int *n) const {
     }
 }
 
-void BDD::DumpTailPath(std::ostream &out) const {
-    for( auto parent : true_bdd.parents ) {
-        DumpTailPath2(out, parent, "", &true_bdd);
-    }
-}
-
-void BDD::DumpTailPath2(std::ostream &out, Node *node, std::string str,const Node *child) const {
-    if( node->low == child) {
-        // str = var_table[node->var-1].label + "'" + str;
-    } else {
-        str = var_table[node->var-1].label + " " + str;
-    }
-
-    if( node->parents.size() <= 0) {
-        out << str << std::endl;
-        return;
-    }
-
-    for( auto parent : node->parents) {
-        DumpTailPath2(out, parent, str, node);
-    }
-}
-
-
-void BDD::DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
-    auto itr = std::find(done->begin(), done->end(), node);
-
-    if( itr == done->end() ) {
-        done->push_back(node);
-        out << node->node_number << "[label=\""
-            << var_table[node->var-1].label << "\"]"
-            << std::endl;
-
-        out << "{rank=same; " << var_table[node->var-1].label << "; "
-            << node->node_number << ";}"
-            << std::endl;
-
-        out << node->node_number << "->"
-            << node->low->node_number
-            << "[style=dashed];"
-            << std::endl; 
-
-        out << node->node_number << "->"
-            << node->high->node_number
-            << std::endl; 
-    }
-
-    for( auto parent : node->parents) {;
-        DumpTailDot2(out, parent, done, node);
-    }
-}
-
 bool operator < (const BDD::reverse_keyt &x,
         const BDD::reverse_keyt &y) {
     if(x.var<y.var) return true;
@@ -217,48 +166,42 @@ bool or_fkt(bool x, bool y) {
 }
 
 Node Node::operator ==(Node &other) {
-    return *apply(equal_fkt, this, &other, true);
+    return *apply(equal_fkt, this, &other);
 }
 Node Node::operator ^(Node &other) {
-    return *apply(xor_fkt, this, &other, true);
+    return *apply(xor_fkt, this, &other);
 }
 Node Node::operator !() {
     return bdd->true_bdd ^ *this;
 }
 Node Node::operator &(Node &other) {
-    return *apply(and_fkt, this, &other,true);
+    return *apply(and_fkt, this, &other);
 }
 Node Node::operator |(Node &other) {
-    return *apply(or_fkt, this, &other, true);
+    return *apply(or_fkt, this, &other);
 }
 Node* Not(Node *x) {
     x->bdd->remove_root(x);
-    x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x, true));
+    x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x));
     return x->bdd->roots.back();
 }
 Node* And(Node *x, Node *y) {
     x->bdd->remove_root(x);
     y->bdd->remove_root(y);
-    x->bdd->add_root(apply(and_fkt, x, y,true));
+    x->bdd->add_root(apply(and_fkt, x, y));
     return x->bdd->roots.back();
 }
 Node* Or(Node *x, Node *y) {
     x->bdd->remove_root(x);
     y->bdd->remove_root(y);
-    x->bdd->add_root(apply(or_fkt, x, y,true));
+    x->bdd->add_root(apply(or_fkt, x, y));
     return x->bdd->roots.back();
 }
 
 
-Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
+Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
     BDD *bdd = x->bdd;
-    
     Node *u;
-
-    // if( flag && x->low != NULL ) { x->low->remove_parent(x); }
-    // if( flag && x->high != NULL ) { x->high->remove_parent(x); }
-    // if( y->low != NULL ) { y->low->remove_parent(y);  }
-    // if( y->high != NULL ) { y->high->remove_parent(y); }
 
     // 両方定数ノード
     if( fkt == or_fkt && ( x->is_true() || y->is_true()) ) {
@@ -269,29 +212,20 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
         u=&(fkt(x->is_true(), y->is_true())? bdd->true_bdd : bdd->false_bdd);
     } else if(x->var==y->var) {
         u=bdd->make(x->var,
-                apply(fkt, x->low, y->low, true),
-                apply(fkt, x->high, y->high, true)
+                apply(fkt, x->low, y->low),
+                apply(fkt, x->high, y->high)
                 );  
     } else if(x->var<y->var) {
         u=bdd->make(x->var,
-                apply(fkt, y, x->low, flag), 
-                apply(fkt, y, x->high, false)
+                apply(fkt, y, x->low), 
+                apply(fkt, y, x->high)
                 );  
     } else /* x->var() > y->var() */ {
         u=bdd->make(y->var,
-                apply(fkt, x, y->low, flag),
-                apply(fkt, x, y->high, false)
+                apply(fkt, x, y->low),
+                apply(fkt, x, y->high)
                 );  
     }   
 
-    // if( u->low != NULL ) { 
-    //     u->low->add_parent(u);
-    // }   
-    // if( u->high != NULL ) { 
-    //     u->high->add_parent(u);
-    // }   
-
-    // std::clog << "u:" << u << std::endl;
     return u;
 }
-
