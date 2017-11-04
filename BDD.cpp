@@ -255,10 +255,10 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
     
     Node *u;
 
-    // if( flag && x->low != NULL ) { x->low->remove_parent(x); }
-    // if( flag && x->high != NULL ) { x->high->remove_parent(x); }
-    // if( y->low != NULL ) { y->low->remove_parent(y);  }
-    // if( y->high != NULL ) { y->high->remove_parent(y); }
+    if( flag && x->low != NULL ) { x->low->remove_parent(x); }
+    if( flag && x->high != NULL ) { x->high->remove_parent(x); }
+    if( y->low != NULL ) { y->low->remove_parent(y);  }
+    if( y->high != NULL ) { y->high->remove_parent(y); }
 
     // 両方定数ノード
     if( fkt == or_fkt && ( x->is_true() || y->is_true()) ) {
@@ -284,14 +284,14 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
                 );  
     }   
 
-    // if( u->low != NULL ) { 
-    //     u->low->add_parent(u);
-    // }   
-    // if( u->high != NULL ) { 
-    //     u->high->add_parent(u);
-    // }   
+    if( u->low != NULL ) { 
+        u->low->add_parent(u);
+    }   
+    if( u->high != NULL ) { 
+        u->high->add_parent(u);
+    }   
 
-    // std::clog << "u:" << u << std::endl;
+    std::clog << "u:" << u << std::endl;
     return u;
 }
 
