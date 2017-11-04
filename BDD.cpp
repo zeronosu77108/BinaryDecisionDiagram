@@ -36,7 +36,7 @@ BDD::BDD() {
 
 BDD::~BDD() {
 }
-void BDD::DumpDot2(std::ostream &out) const {
+void BDD::DumpDot(std::ostream &out) const {
     std::vector<Node *> done;
 
     out << "digraph BDD {" << std::endl;
@@ -61,13 +61,13 @@ void BDD::DumpDot2(std::ostream &out) const {
     out << std::endl << str << "[style=invis]" << std::endl;;
 
     for(auto root : roots){
-        DumpDot2_2(out,root,&done);
+        DumpDot_2(out,root,&done);
     }
 
     out << "}" << std::endl;
 }
 
-void BDD::DumpDot2_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
+void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
     auto itr = std::find(done->begin(), done->end(), node);
 
     if( itr == done->end() ) {
@@ -87,13 +87,13 @@ void BDD::DumpDot2_2(std::ostream &out,Node *node, std::vector<Node *> *done ) c
                 << node->low->node_number
                 << "[style=dashed];"
                 << std::endl; 
-            DumpDot2_2(out, node->low, done);
+            DumpDot_2(out, node->low, done);
         }
         if( node->high != NULL){
             out << node->node_number << "->"
                 << node->high->node_number
                 << std::endl; 
-            DumpDot2_2(out,node->high, done);
+            DumpDot_2(out,node->high, done);
         }
     }
 }
@@ -144,39 +144,6 @@ void BDD::Tail_Path2(std::ostream &out, Node *node, std::string str,const Node *
     }
 }
 
-void BDD::Tail_DumpDot(std::ostream &out) const {
-    out << "digraph BDD {" << std::endl;
-
-    out << "center = true;" << std::endl;
-    out << "margin = 0;" << std::endl;
-
-    out << "  { node [shape=box,fontsize=24]; \"0\"; }" << std::endl;
-    out << "  { node [shape=box,fontsize=24]; \"1\"; }" << std::endl
-        << std::endl;
-
-    std::string str = "";
-    bool f = false;
-    for( auto v : var_table ) {
-        if(f){
-            str += "->";
-        }
-        f=true;
-        out << v.label << "[style=invis];";
-        str += v.label;
-    }
-    out << std::endl << str << "[style=invis]" << std::endl;;
-
-    std::vector<Node *> done;
-    for( auto parent : true_bdd.parents ) {
-        Tail_DumpDot2(out, parent, &done, &true_bdd);
-    }
-    for( auto parent : false_bdd.parents) {
-        Tail_DumpDot2(out, parent, &done, &true_bdd);
-    }
-
-    out << "}" << std::endl;
-}
-
 
 void BDD::Tail_DumpDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
     auto itr = std::find(done->begin(), done->end(), node);
@@ -215,66 +182,6 @@ bool operator < (const BDD::reverse_keyt &x,
     return x.high<y.high;
 }
 
-
-
-void BDD::DumpDot(std::ostream &out) const {
-    out << "digraph BDD {" << std::endl;
-    out << "center = true;" << std::endl;
-    out << "margin = 0;" << std::endl;
-    out << "  { node [shape=box,fontsize=24]; \"0\"; }" << std::endl;
-    out << "  { node [shape=box,fontsize=24]; \"1\"; }" << std::endl
-        << std::endl;
-
-    /* 左ラベルのランク */
-    for(unsigned v=0; v<var_table.size(); v++) {
-        /* ノードのラベル付け */
-        forall_nodes(u) {
-            if(u->var==(v+1) && u->reference_counter!=0) {
-                out << u->node_number
-                    << " [label=\""
-                    << var_table[v].label
-                    << "\"]; "
-                    << std::endl;
-            }
-        }
-
-        /* ノードのランク付け */
-        out << "{ rank=same; ";
-        forall_nodes(u) {
-            if(u->var==(v+1) && u->reference_counter!=0) {
-                out << u->node_number << "; ";
-            }
-        }
-        out << "}" << std::endl << std::endl;
-    }
-
-    out << std::endl;
-
-    /* ノードをつなぐ */
-    forall_nodes(u) {
-        if(u->reference_counter==0) continue;
-        if(u->node_number<=1) continue;
-
-        // if(u->high->node_number!=0) {
-            out << u->node_number << " -> "
-                << u->high->node_number
-                << " [style=solid,arrowsize=\".75\"];"
-                << std::endl;
-        // }
-
-        // if(u->low->node_number!=0) {
-            out << u->node_number << " -> "
-                << u->low->node_number
-                << " [style=dashed,arrowsize=\".74\"];"
-                << std::endl;
-        // }
-
-        out << std::endl;
-    }
-
-    out << "}" << std::endl;
-
-}
 
 bool equal_fkt(bool x, bool y) {
     return x==y;

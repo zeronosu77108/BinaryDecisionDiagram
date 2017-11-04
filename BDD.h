@@ -60,8 +60,7 @@ class BDD {
         Node* Var(const std::string &label);
 
         void DumpDot(std::ostream &out) const;
-        void DumpDot2(std::ostream &out) const;
-        void DumpDot2_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
+        void DumpDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
         void Path(std::ostream &out) const;
         void Path_2(std::ostream &out, Node *node, std::string str) const;
         void Tail_Path(std::ostream &out) const;

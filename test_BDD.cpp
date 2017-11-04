@@ -71,7 +71,7 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     // bdd.Tail_Pass(out);
     // bdd.Count_Path(out);
     // bdd.Tail_DumpDot(out);
-    bdd.DumpDot2(out);
+    bdd.DumpDot(out);
 }
 
 
