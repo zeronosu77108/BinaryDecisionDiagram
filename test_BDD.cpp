@@ -65,13 +65,13 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     }
     Node * final = ors[0];
     for(int i=1; i<ors.size(); i++){
-        final = And(final, ors[i]);
+        // final = AND(final, ors[i]);
     }
     // bdd.DumpPass(out);
     // bdd.Tail_Pass(out);
-    bdd.DumpCountPath(out);
+    // bdd.DumpCountPath(out);
     // bdd.Tail_DumpDot(out);
-    // bdd.DumpDot(out);
+    bdd.DumpDot(out);
 }
 
 
@@ -108,13 +108,32 @@ test(orders,exp,outputfile);
     timefile << elapsed << "ms";
 }
 
+void test2(){
+    BDD bdd;
+    std::vector<Node *> list1;
+    std::vector<Node *> list2;
+
+    list1.push_back(bdd.Var("P1"));
+    list1.push_back(bdd.Var("P2"));
+    list2.push_back(bdd.Var("P3"));
+    list2.push_back(bdd.Var("P4"));
+    list2.push_back(bdd.Var("P5"));
+    list1.push_back(bdd.Var("P6"));
+
+
+    AND(list1,list2);
+
+    bdd.DumpDot(std::cout);
+}
+
 int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
     std::vector<std::string> orders;
     // std::vector<std::string> orders = {"P3","P4","P1","P9","P2","P10","P5","P6","P8","P7"};
-    orders = {"P2","P9","P6","P7","P3","P10","P4","P1","P5","P8"};
+    // orders = {"P7","P9","P5","P10","P8","P6","P1","P2","P3","P4"};
+    // orders = {"P1","P2","P3","P4"};
 
-    int n = 10;
+    // int n = 10;
     std::string str = argv[1];
     std::ofstream outputfile(argv[2]);
     std::ofstream timefile(argv[3]);
@@ -125,7 +144,8 @@ int main(int argc, char *argv[], char *envp[]) {
 
 
     // count_path(n,exp,std::cout);
-    test(orders,exp,outputfile);
+    // test(orders,exp,outputfile);
+    test2();
     // mes_time(orders, exp, outputfile, timefile);
 
 }

@@ -3,34 +3,28 @@
 
 Node* BDD::Var(const std::string &label) {
     var_table.push_back(var_table_entryt(label));
-    Node* tmp = make(var_table.size(), &false_bdd, &true_bdd);
+    Node* tmp = make(var_table.size(), &true_bdd);
     true_bdd.add_parent(tmp);
     roots.push_back( tmp );
     return tmp;
 }
 
-Node* BDD::make(unsigned int var, Node *low, Node *high) {
-    if(low->node_number == high->node_number) {
-        return low;
+Node* BDD::make(unsigned int var, Node *high) {
+    reverse_keyt reverse_key(var, *high);
+    reverse_mapt::const_iterator it= reverse_map.find(reverse_key);
+    
+    if( it != reverse_map.end() ) {
+        return it->second;
     } else {
-        reverse_keyt reverse_key(var, *low, *high);
-        reverse_mapt::const_iterator it= reverse_map.find(reverse_key);
-        
-        if( it != reverse_map.end() ) {
-            return it->second;
-        } else {
-            unsigned int new_number = nodes.back().node_number+1;
-            nodes.push_back( Node(this, var, new_number, low, high) );
-            reverse_map[reverse_key] = &nodes.back();
-            return &nodes.back();
-        }
+        unsigned int new_number = nodes.back().node_number+1;
+        nodes.push_back( Node(this, var, new_number, high) );
+        reverse_map[reverse_key] = &nodes.back();
+        return &nodes.back();
     }
 }
 
 BDD::BDD() {
-    nodes.push_back( Node(this,-1,0,NULL,NULL) );
-    false_bdd = nodes.back();
-    nodes.push_back( Node(this,-1,1,NULL,NULL) );
+    nodes.push_back( Node(this,-1,1,NULL) );
     true_bdd = nodes.back();
 }
 
@@ -44,7 +38,6 @@ void BDD::DumpDot(std::ostream &out) const {
     out << "center = true;" << std::endl;
     out << "margin = 0;" << std::endl;
 
-    out << "  { node [shape=box,fontsize=24]; \"0\"; }" << std::endl;
     out << "  { node [shape=box,fontsize=24]; \"1\"; }" << std::endl
         << std::endl;
 
@@ -68,32 +61,27 @@ void BDD::DumpDot(std::ostream &out) const {
 }
 
 void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
+    std::clog << node->node_number << std::endl;
     auto itr = std::find(done->begin(), done->end(), node);
 
     if( itr == done->end() ) {
         done->push_back(node);
-        if( node->low!=NULL||node->high!=NULL){
-            out << node->node_number << "[label=\""
-                << var_table[node->var-1].label << "\"]"
-                << std::endl;
+        for( auto h : node->high ) {
+            if( h!=NULL){
+                out << node->node_number << "[label=\""
+                    << var_table[node->var-1].label << "\"]"
+                    << std::endl;
 
-            out << "{rank=same; " << var_table[node->var-1].label << "; "
-                << node->node_number << ";}"
-                << std::endl;
-        }
+                out << "{rank=same; " << var_table[node->var-1].label << "; "
+                    << node->node_number << ";}"
+                    << std::endl;
 
-        if( node->low != NULL){
-            out << node->node_number << "->"
-                << node->low->node_number
-                << "[style=dashed];"
-                << std::endl; 
-            DumpDot_2(out, node->low, done);
-        }
-        if( node->high != NULL){
-            out << node->node_number << "->"
-                << node->high->node_number
-                << std::endl; 
-            DumpDot_2(out,node->high, done);
+
+                out << node->node_number << "->"
+                    << h->node_number
+                    << std::endl; 
+                DumpDot_2(out,h, done);
+            }
         }
     }
 }
@@ -107,18 +95,18 @@ void BDD::DumpPath(std::ostream &out) const {
 }
 
 void BDD::DumpPath_2(std::ostream &out, Node *node, std::string str) const {
-    if(node->low!=NULL) {
-        DumpPath_2(out, node->low, str);
-        // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
-    }
-    if(node->high!=NULL) {
-        DumpPath_2(out, node->high,
-                var_table[node->var-1].label + " " + str);
-        return;
-    }
-
-    if(node->node_number==1)
-        out << str << std::endl;
+    // if(node->low!=NULL) {
+    //     DumpPath_2(out, node->low, str);
+    //     // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
+    // }
+    // if(node->high!=NULL) {
+    //     DumpPath_2(out, node->high,
+    //             var_table[node->var-1].label + " " + str);
+    //     return;
+    // }
+    //
+    // if(node->node_number==1)
+    //     out << str << std::endl;
 }
 void BDD::DumpCountPath(std::ostream &out) const {
     int n = 0;
@@ -129,16 +117,16 @@ void BDD::DumpCountPath(std::ostream &out) const {
 }
 
 void BDD::_DumpCountPath(Node *node, int *n) const {
-    if(node->low!=NULL) {
-        _DumpCountPath(node->low, n);
-    }
-    if(node->high!=NULL) {
-        _DumpCountPath(node->high, n);
-    }
-
-    if(node->node_number==1) {
-        *n = *n + 1;
-    }
+    // if(node->low!=NULL) {
+    //     _DumpCountPath(node->low, n);
+    // }
+    // if(node->high!=NULL) {
+    //     _DumpCountPath(node->high, n);
+    // }
+    //
+    // if(node->node_number==1) {
+    //     *n = *n + 1;
+    // }
 }
 
 void BDD::DumpTailPath(std::ostream &out) const {
@@ -148,57 +136,57 @@ void BDD::DumpTailPath(std::ostream &out) const {
 }
 
 void BDD::DumpTailPath2(std::ostream &out, Node *node, std::string str,const Node *child) const {
-    if( node->low == child) {
-        // str = var_table[node->var-1].label + "'" + str;
-    } else {
-        str = var_table[node->var-1].label + " " + str;
-    }
-
-    if( node->parents.size() <= 0) {
-        out << str << std::endl;
-        return;
-    }
-
-    for( auto parent : node->parents) {
-        DumpTailPath2(out, parent, str, node);
-    }
+    // if( node->low == child) {
+    //     // str = var_table[node->var-1].label + "'" + str;
+    // } else {
+    //     str = var_table[node->var-1].label + " " + str;
+    // }
+    //
+    // if( node->parents.size() <= 0) {
+    //     out << str << std::endl;
+    //     return;
+    // }
+    //
+    // for( auto parent : node->parents) {
+    //     DumpTailPath2(out, parent, str, node);
+    // }
 }
 
 
 void BDD::DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const {
-    auto itr = std::find(done->begin(), done->end(), node);
-
-    if( itr == done->end() ) {
-        done->push_back(node);
-        out << node->node_number << "[label=\""
-            << var_table[node->var-1].label << "\"]"
-            << std::endl;
-
-        out << "{rank=same; " << var_table[node->var-1].label << "; "
-            << node->node_number << ";}"
-            << std::endl;
-
-        out << node->node_number << "->"
-            << node->low->node_number
-            << "[style=dashed];"
-            << std::endl; 
-
-        out << node->node_number << "->"
-            << node->high->node_number
-            << std::endl; 
-    }
-
-    for( auto parent : node->parents) {;
-        DumpTailDot2(out, parent, done, node);
-    }
+    // auto itr = std::find(done->begin(), done->end(), node);
+    //
+    // if( itr == done->end() ) {
+    //     done->push_back(node);
+    //     out << node->node_number << "[label=\""
+    //         << var_table[node->var-1].label << "\"]"
+    //         << std::endl;
+    //
+    //     out << "{rank=same; " << var_table[node->var-1].label << "; "
+    //         << node->node_number << ";}"
+    //         << std::endl;
+    //
+    //     out << node->node_number << "->"
+    //         << node->low->node_number
+    //         << "[style=dashed];"
+    //         << std::endl; 
+    //
+    //     out << node->node_number << "->"
+    //         << node->high->node_number
+    //         << std::endl; 
+    // }
+    //
+    // for( auto parent : node->parents) {;
+    //     DumpTailDot2(out, parent, done, node);
+    // }
 }
 
 bool operator < (const BDD::reverse_keyt &x,
         const BDD::reverse_keyt &y) {
     if(x.var<y.var) return true;
     if(x.var>y.var) return false;
-    if(x.low<y.low) return true;
-    if(x.low>y.low) return false;
+    // if(x.low<y.low) return true;
+    // if(x.low>y.low) return false;
     return x.high<y.high;
 }
 
@@ -217,81 +205,93 @@ bool or_fkt(bool x, bool y) {
 }
 
 Node Node::operator ==(Node &other) {
-    return *apply(equal_fkt, this, &other, true);
+    return *apply(equal_fkt, this, &other);
 }
 Node Node::operator ^(Node &other) {
-    return *apply(xor_fkt, this, &other, true);
+    return *apply(xor_fkt, this, &other);
 }
 Node Node::operator !() {
     return bdd->true_bdd ^ *this;
 }
 Node Node::operator &(Node &other) {
-    return *apply(and_fkt, this, &other,true);
+    return *apply(and_fkt, this, &other);
 }
 Node Node::operator |(Node &other) {
-    return *apply(or_fkt, this, &other, true);
+    return *apply(or_fkt, this, &other);
 }
 Node* Not(Node *x) {
     x->bdd->remove_root(x);
-    x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x, true));
+    x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x));
     return x->bdd->roots.back();
 }
-Node* And(Node *x, Node *y) {
-    x->bdd->remove_root(x);
-    y->bdd->remove_root(y);
-    x->bdd->add_root(apply(and_fkt, x, y,true));
-    return x->bdd->roots.back();
+std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
+    std::vector<Node *> head;
+    for( auto x : xl) {
+        for( auto y : yl) {
+            x->bdd->remove_root(x);
+            y->bdd->remove_root(y);
+            x->bdd->roots.push_back( apply(and_fkt, x,y) );
+            std::clog << "roots push_back " << x->bdd->var_table[x->bdd->roots.back()->var-1].label
+                      << " " << x->bdd->roots.back()->node_number << std::endl;
+        }
+    }
+           
+    return head;
 }
 Node* Or(Node *x, Node *y) {
     x->bdd->remove_root(x);
     y->bdd->remove_root(y);
-    x->bdd->add_root(apply(or_fkt, x, y,true));
+    x->bdd->add_root(apply(or_fkt, x, y));
     return x->bdd->roots.back();
 }
 
 
-Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
+Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
     BDD *bdd = x->bdd;
+
+    if( x!=NULL && !x->is_constant()) {
+        std::clog << bdd->var_table[x->var-1].label;
+    }
+    std::clog << " & ";
+    if( y!=NULL && !y->is_constant()) {
+        std::clog << bdd->var_table[y->var-1].label;
+    }
+    std::clog << std::endl;
     
+
     Node *u;
 
-    if( flag && x->low != NULL ) { x->low->remove_parent(x); }
-    if( flag && x->high != NULL ) { x->high->remove_parent(x); }
-    if( y->low != NULL ) { y->low->remove_parent(y);  }
-    if( y->high != NULL ) { y->high->remove_parent(y); }
-
     // 両方定数ノード
-    if( fkt == or_fkt && ( x->is_true() || y->is_true()) ) {
-        u = &(bdd->true_bdd);
-    } else if( fkt == and_fkt && ( x->is_false() || y->is_false()) ) {
-        u = &(bdd->false_bdd);
-    } else if(x->is_constant() && y->is_constant()) {
-        u=&(fkt(x->is_true(), y->is_true())? bdd->true_bdd : bdd->false_bdd);
+    if(x->is_constant() && y->is_constant()) {
+        u=(fkt(x->is_true(), y->is_true())? &bdd->true_bdd : NULL);
     } else if(x->var==y->var) {
-        u=bdd->make(x->var,
-                apply(fkt, x->low, y->low, true),
-                apply(fkt, x->high, y->high, true)
-                );  
+        for(auto xh : x->high ) {
+            for(auto yh : x->high ) {
+                if( xh == NULL || yh == NULL ){
+                    u = NULL;
+                } else {
+                    u=bdd->make(x->var,apply(fkt, xh, yh));  
+                }
+            }
+        }
     } else if(x->var<y->var) {
-        u=bdd->make(x->var,
-                apply(fkt, y, x->low, flag), 
-                apply(fkt, y, x->high, false)
-                );  
+        for(auto xh : x->high ) {
+            if( xh == NULL) {
+                u = NULL;
+            } else {
+                u=bdd->make(x->var, apply(fkt, y, xh));  
+            }
+        }
     } else /* x->var() > y->var() */ {
-        u=bdd->make(y->var,
-                apply(fkt, x, y->low, flag),
-                apply(fkt, x, y->high, false)
-                );  
+        for(auto yh : y->high ) {
+            if( yh == NULL) {
+                u = NULL;
+            } else {
+                u=bdd->make(y->var,apply(fkt, x, yh));
+            }
+        }
     }   
 
-    if( u->low != NULL ) { 
-        u->low->add_parent(u);
-    }   
-    if( u->high != NULL ) { 
-        u->high->add_parent(u);
-    }   
-
-    std::clog << "u:" << u << std::endl;
     return u;
 }
 

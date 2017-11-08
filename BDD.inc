@@ -1,6 +1,6 @@
 // inline functions
 
-Node::Node():low(NULL),high(NULL){
+Node::Node(){
 }
 
 Node &Node::operator=(Node &x)
@@ -8,7 +8,6 @@ Node &Node::operator=(Node &x)
   bdd = x.bdd;
   var = x.var;
   node_number = x.node_number;
-  low = x.low;
   high = x.high;
   reference_counter = x.reference_counter;
   return *this;
@@ -17,10 +16,10 @@ Node &Node::operator=(Node &x)
 Node::Node(
     BDD *_bdd,
     unsigned int _var, unsigned int _node_number,
-    Node *_low, Node *_high):
+    Node *_high):
     bdd(_bdd), var(_var), node_number(_node_number),
-    low(_low), high(_high), reference_counter(1){
-    /* reference_counter(0){ */
+    reference_counter(1){
+        high.push_back(_high);
 }
 
 Node::~Node(){}
@@ -62,8 +61,8 @@ bool Node::is_false() const{
 BDD::var_table_entryt::var_table_entryt(const std::string &_label):label(_label){}
 
 BDD::reverse_keyt::reverse_keyt(
-    unsigned _var, Node &_low, Node &_high):
-    var(_var), low(_low.node_number), high(_high.node_number) {
+    unsigned _var, Node &_high):
+    var(_var), high(_high.node_number) {
 }
 
 void BDD::add_root(Node *_root) {

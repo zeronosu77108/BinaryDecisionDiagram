@@ -17,13 +17,11 @@ class Node {
     public:
         inline Node();
         inline ~Node();
-        Node *low; 
-        Node *high;
+        std::vector<Node *>high;
         inline Node(
                 class BDD *_bdd,
                 unsigned int _var,
                 unsigned int _node_number,
-                Node *_low,
                 Node *_high);
 
         Node operator !();
@@ -48,7 +46,7 @@ class Node {
 
         inline void add_parent(Node *_parent);
         inline void remove_parent(Node *_parent);
-        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
+        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y);
 
 };
 
@@ -92,9 +90,9 @@ class BDD {
         var_tablet var_table;
 
         struct reverse_keyt {
-            unsigned var, low, high;
+            unsigned var, high;
             inline reverse_keyt(
-                    unsigned int _var, Node &_low, Node &high);
+                    unsigned int _var, Node &high);
         };
 
         typedef std::map<reverse_keyt, Node*> reverse_mapt;
@@ -102,14 +100,14 @@ class BDD {
 
         friend bool operator < (const reverse_keyt &x, const reverse_keyt &y);
 
-        Node* make(unsigned int var, Node *low, Node *high);
+        Node* make(unsigned int var, Node *high);
         friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
 
 };
 
 // BDD apply(bool (*fkt)(bool x, bool y), const BDD &x, const BDD &y);
 Node* Not(Node *x);
-Node* And(Node *x, Node *y);
+std::vector<Node *> AND(std::vector<Node *> x, std::vector<Node *> y);
 Node* Or(Node *x, Node *y);
 
 #define forall_nodes(it) for(nodest::const_iterator it=nodes.begin(); \
