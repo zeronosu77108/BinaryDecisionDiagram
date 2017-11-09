@@ -67,9 +67,9 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
         final = AND(final, list);
     }
 
-    // bdd.DumpPath(out);
+    bdd.DumpPath(out);
     // bdd.DumpCountPath(out);
-    bdd.DumpDot(out);
+    // bdd.DumpDot(out);
 }
 
 
@@ -110,7 +110,8 @@ int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
     std::vector<std::string> orders;
     // orders = {"P7","P9","P5","P10","P8","P6","P1","P2","P3","P4"};
-    orders = {"P1","P2","P3","P4","P5","P6"};
+    // orders = {"P1","P2","P3","P4","P5","P6","P7","P8","P9","P10"};
+    orders = {"P1","P2","P3","P4","P5","P6","P7"};
 
     int n = 10;
     std::string str = argv[1];

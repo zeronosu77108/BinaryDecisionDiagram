@@ -3,25 +3,28 @@
 
 Node* BDD::Var(const std::string &label) {
     var_table.push_back(var_table_entryt(label));
-    Node* tmp = make(var_table.size(), &true_bdd);
+    Node* tmp = make(var_table.size(), &true_bdd, false);
     true_bdd.add_parent(tmp);
     roots.push_back( tmp );
     return tmp;
 }
 
-Node* BDD::make(unsigned int var, Node *high) {
-    // for(auto itr=roots.begin(); itr!=roots.end(); itr++){
-    //     if( (*itr)->var == var ) {
-    //         (*itr)->high.push_back(high);
-    //         return *itr;
-    //     }
-    // }
+Node* BDD::make(unsigned int var, Node *high, bool f) {
+    if( f ) {
+        for(auto itr=roots.begin(); itr!=roots.end(); itr++){
+            if( (*itr)->var == var ) {
+                auto it = std::find((*itr)->high.begin(), (*itr)->high.end(), high);
+                if( it == (*itr)->high.end() ){
+                    (*itr)->high.push_back(high);
+                }
+                return *itr;
+            }
+        }
+    }
 
     reverse_keyt reverse_key(var, *high);
     reverse_mapt::const_iterator it= reverse_map.find(reverse_key);
 
-    // auto itr = std::find(roots.begin(), roots.end(), it->second);
-    // if( it != reverse_map.end() && itr==roots.end()) {
     if( it != reverse_map.end() ) {
         return it->second;
     } else {
@@ -211,24 +214,24 @@ bool or_fkt(bool x, bool y) {
     return x||y;
 }
 
-Node Node::operator ==(Node &other) {
-    return *apply(equal_fkt, this, &other);
-}
-Node Node::operator ^(Node &other) {
-    return *apply(xor_fkt, this, &other);
-}
-Node Node::operator !() {
-    return bdd->true_bdd ^ *this;
-}
-Node Node::operator &(Node &other) {
-    return *apply(and_fkt, this, &other);
-}
-Node Node::operator |(Node &other) {
-    return *apply(or_fkt, this, &other);
-}
+// Node Node::operator ==(Node &other) {
+//     return *apply(equal_fkt, this, &other);
+// }
+// Node Node::operator ^(Node &other) {
+//     return *apply(xor_fkt, this, &other);
+// }
+// Node Node::operator !() {
+//     return bdd->true_bdd ^ *this;
+// }
+// Node Node::operator &(Node &other) {
+//     return *apply(and_fkt, this, &other);
+// }
+// Node Node::operator |(Node &other) {
+//     return *apply(or_fkt, this, &other);
+// }
 Node* Not(Node *x) {
     x->bdd->remove_root(x);
-    x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x));
+    // x->bdd->add_root(apply(xor_fkt, &x->bdd->true_bdd, x));
     return x->bdd->roots.back();
 }
 std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
@@ -238,7 +241,9 @@ std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
         for( auto y : yl) {
             x->bdd->remove_root(x);
             y->bdd->remove_root(y);
-            head.push_back(apply(and_fkt, x,y));
+            Node *tmp = apply(and_fkt, x,y,true);
+            head.push_back( tmp );
+            x->bdd->add_root(tmp);
         }
         f = false;
     }
@@ -250,20 +255,14 @@ std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
 Node* Or(Node *x, Node *y) {
     x->bdd->remove_root(x);
     y->bdd->remove_root(y);
-    x->bdd->add_root(apply(or_fkt, x, y));
+    // x->bdd->add_root(apply(or_fkt, x, y));
     return x->bdd->roots.back();
 }
 
 
-Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
+Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool f) {
     BDD *bdd = x->bdd;
     Node *u;
-    // if( x!=NULL && !x->is_constant())
-    // std::clog << bdd->var_table[x->var-1].label;
-    // std::clog << " & ";
-    // if( y!=NULL && !y->is_constant())
-    // std::clog << bdd->var_table[y->var-1].label;
-    // std::clog << std::endl;
 
     // 両方定数ノード
     if(x->is_constant() && y->is_constant()) {
@@ -274,7 +273,7 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
                 if( xh == NULL || yh == NULL ){
                     u = NULL;
                 } else {
-                    u=bdd->make(x->var,apply(fkt, xh, yh));  
+                    u=bdd->make(x->var,apply(fkt, xh, yh,false),f);  
                 }
             }
         }
@@ -283,7 +282,7 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
             if( xh == NULL) {
                 u = NULL;
             } else {
-                u=bdd->make(x->var,apply(fkt, xh, y));  
+                u=bdd->make(x->var,apply(fkt, xh, y,false),f);  
             }
         }
     } else /* x->var() > y->var() */ {
@@ -291,7 +290,7 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
             if( yh == NULL) {
                 u = NULL;
             } else {
-                u=bdd->make(y->var,apply(fkt, x, yh));
+                u=bdd->make(y->var,apply(fkt, x, yh,false),f);
             }
         }
     }   

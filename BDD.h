@@ -46,7 +46,7 @@ class Node {
 
         inline void add_parent(Node *_parent);
         inline void remove_parent(Node *_parent);
-        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y);
+        friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool f);
 
 };
 
@@ -100,7 +100,7 @@ class BDD {
 
         friend bool operator < (const reverse_keyt &x, const reverse_keyt &y);
 
-        Node* make(unsigned int var, Node *high);
+        Node* make(unsigned int var, Node *high, bool f);
         friend Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag);
 
 };
