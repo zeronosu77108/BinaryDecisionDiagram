@@ -20,7 +20,8 @@ Node* BDD::make(unsigned int var, Node *high) {
     reverse_keyt reverse_key(var, *high);
     reverse_mapt::const_iterator it= reverse_map.find(reverse_key);
 
-    
+    // auto itr = std::find(roots.begin(), roots.end(), it->second);
+    // if( it != reverse_map.end() && itr==roots.end()) {
     if( it != reverse_map.end() ) {
         return it->second;
     } else {
@@ -62,6 +63,8 @@ void BDD::DumpDot(std::ostream &out) const {
     out << std::endl << str << "[style=invis]" << std::endl;;
 
     for(auto root : roots){
+        out << root->node_number
+            << "[shape=doublecircle]";
         DumpDot_2(out,root,&done);
     }
 
@@ -230,14 +233,17 @@ Node* Not(Node *x) {
 }
 std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
     std::vector<Node *> head;
+    bool f = true;
     for( auto x : xl) {
         for( auto y : yl) {
             x->bdd->remove_root(x);
             y->bdd->remove_root(y);
-            Node *tmp = apply(and_fkt, x,y);
-            x->bdd->add_root( tmp );
-            head.push_back(tmp);
+            head.push_back(apply(and_fkt, x,y));
         }
+        f = false;
+    }
+    for( auto tmp : head ){ 
+        xl[0]->bdd->add_root( tmp );
     }
     return head;
 }

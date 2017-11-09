@@ -67,7 +67,7 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
         final = AND(final, list);
     }
 
-    // bdd.DumpPass(out);
+    // bdd.DumpPath(out);
     // bdd.DumpCountPath(out);
     bdd.DumpDot(out);
 }
@@ -123,8 +123,8 @@ int main(int argc, char *argv[], char *envp[]) {
 
 
     // count_path(n,exp,std::cout);
-    test(orders,exp,outputfile);
+    // test(orders,exp,outputfile);
     // test2();
-    // mes_time(orders, exp, outputfile, timefile);
+    mes_time(orders, exp, outputfile, timefile);
 }
 
