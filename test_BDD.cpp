@@ -7,11 +7,11 @@
 
 #include "BDD.h"
 
-void print_vec(std::vector<std::string> str){
+void print_vec(std::vector<std::string> str, bool f){
     for( auto s : str ) {
         std::cout << s << " ";
     }
-    // std::cout << std::endl;
+    if( f ) { std::cout << std::endl; }
 }
 
 std::vector< std::vector<std::string> > split(std::string str) {
@@ -48,29 +48,27 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
         }
     }
 
+    std::vector<Node *> final;
+    bool f = true;
     for( auto ex : exp ) {
-        bool f = true;
-        for( auto e : ex ) {
-           if( mp.count(e) == 0 ) {
-              mp[e] = bdd.Var(e);
-           }
-
-           if( f ) {
-               f = false;
-               ors.push_back(mp[e]);
-           } else {
-               ors.back() = Or( ors.back() , mp[e]);
-           }
+        std::vector<Node *> list;
+        for( auto e : ex ){
+            if(mp.count(e)==0){
+                mp[e]=bdd.Var(e);
+            }
+            list.push_back(mp[e]);
         }
+
+        if( f ) {
+            f = false;
+            final = list;
+            continue;
+        }
+        final = AND(final, list);
     }
-    Node * final = ors[0];
-    for(int i=1; i<ors.size(); i++){
-        // final = AND(final, ors[i]);
-    }
+
     // bdd.DumpPass(out);
-    // bdd.Tail_Pass(out);
     // bdd.DumpCountPath(out);
-    // bdd.Tail_DumpDot(out);
     bdd.DumpDot(out);
 }
 
@@ -83,7 +81,7 @@ void count_path(int n, std::vector< std::vector<std::string> > exp, std::ostream
     }
 
     while (next_permutation(orders.begin(), orders.end())) {
-        print_vec(orders);
+        print_vec(orders,false);
         std::chrono::system_clock::time_point start, end;
 
         start = std::chrono::system_clock::now();
@@ -100,7 +98,7 @@ void mes_time(std::vector<std::string> orders,std::vector< std::vector<std::stri
     std::chrono::system_clock::time_point start, end;
 
     start = std::chrono::system_clock::now();
-test(orders,exp,outputfile);
+    test(orders,exp,outputfile);
     end = std::chrono::system_clock::now();
 
     double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
@@ -108,32 +106,13 @@ test(orders,exp,outputfile);
     timefile << elapsed << "ms";
 }
 
-void test2(){
-    BDD bdd;
-    std::vector<Node *> list1;
-    std::vector<Node *> list2;
-
-    list1.push_back(bdd.Var("P1"));
-    list1.push_back(bdd.Var("P2"));
-    list2.push_back(bdd.Var("P3"));
-    list2.push_back(bdd.Var("P4"));
-    list2.push_back(bdd.Var("P5"));
-    list1.push_back(bdd.Var("P6"));
-
-
-    AND(list1,list2);
-
-    bdd.DumpDot(std::cout);
-}
-
 int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
     std::vector<std::string> orders;
-    // std::vector<std::string> orders = {"P3","P4","P1","P9","P2","P10","P5","P6","P8","P7"};
     // orders = {"P7","P9","P5","P10","P8","P6","P1","P2","P3","P4"};
-    // orders = {"P1","P2","P3","P4"};
+    orders = {"P1","P2","P3","P4","P5","P6"};
 
-    // int n = 10;
+    int n = 10;
     std::string str = argv[1];
     std::ofstream outputfile(argv[2]);
     std::ofstream timefile(argv[3]);
@@ -144,9 +123,8 @@ int main(int argc, char *argv[], char *envp[]) {
 
 
     // count_path(n,exp,std::cout);
-    // test(orders,exp,outputfile);
-    test2();
+    test(orders,exp,outputfile);
+    // test2();
     // mes_time(orders, exp, outputfile, timefile);
-
 }
 

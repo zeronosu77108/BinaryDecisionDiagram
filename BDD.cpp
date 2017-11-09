@@ -10,8 +10,16 @@ Node* BDD::Var(const std::string &label) {
 }
 
 Node* BDD::make(unsigned int var, Node *high) {
+    // for(auto itr=roots.begin(); itr!=roots.end(); itr++){
+    //     if( (*itr)->var == var ) {
+    //         (*itr)->high.push_back(high);
+    //         return *itr;
+    //     }
+    // }
+
     reverse_keyt reverse_key(var, *high);
     reverse_mapt::const_iterator it= reverse_map.find(reverse_key);
+
     
     if( it != reverse_map.end() ) {
         return it->second;
@@ -61,7 +69,6 @@ void BDD::DumpDot(std::ostream &out) const {
 }
 
 void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
-    std::clog << node->node_number << std::endl;
     auto itr = std::find(done->begin(), done->end(), node);
 
     if( itr == done->end() ) {
@@ -80,6 +87,7 @@ void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) co
                 out << node->node_number << "->"
                     << h->node_number
                     << std::endl; 
+
                 DumpDot_2(out,h, done);
             }
         }
@@ -88,25 +96,21 @@ void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) co
 
 
 void BDD::DumpPath(std::ostream &out) const {
-
     for(auto root : roots) {
         DumpPath_2(out, root, "");
     }
 }
 
 void BDD::DumpPath_2(std::ostream &out, Node *node, std::string str) const {
-    // if(node->low!=NULL) {
-    //     DumpPath_2(out, node->low, str);
-    //     // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
-    // }
-    // if(node->high!=NULL) {
-    //     DumpPath_2(out, node->high,
-    //             var_table[node->var-1].label + " " + str);
-    //     return;
-    // }
-    //
-    // if(node->node_number==1)
-    //     out << str << std::endl;
+    // std::clog << node->high.size() << std::endl;
+    for(auto h : node->high) {
+        if(h != NULL) {
+            DumpPath_2(out, h, str + var_table[node->var-1].label + " ");
+        }
+    }
+
+    if(node->node_number==1)
+        out << str << std::endl;
 }
 void BDD::DumpCountPath(std::ostream &out) const {
     int n = 0;
@@ -230,12 +234,11 @@ std::vector<Node *> AND(std::vector<Node *> xl, std::vector<Node *> yl) {
         for( auto y : yl) {
             x->bdd->remove_root(x);
             y->bdd->remove_root(y);
-            x->bdd->roots.push_back( apply(and_fkt, x,y) );
-            std::clog << "roots push_back " << x->bdd->var_table[x->bdd->roots.back()->var-1].label
-                      << " " << x->bdd->roots.back()->node_number << std::endl;
+            Node *tmp = apply(and_fkt, x,y);
+            x->bdd->add_root( tmp );
+            head.push_back(tmp);
         }
     }
-           
     return head;
 }
 Node* Or(Node *x, Node *y) {
@@ -248,18 +251,13 @@ Node* Or(Node *x, Node *y) {
 
 Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
     BDD *bdd = x->bdd;
-
-    if( x!=NULL && !x->is_constant()) {
-        std::clog << bdd->var_table[x->var-1].label;
-    }
-    std::clog << " & ";
-    if( y!=NULL && !y->is_constant()) {
-        std::clog << bdd->var_table[y->var-1].label;
-    }
-    std::clog << std::endl;
-    
-
     Node *u;
+    // if( x!=NULL && !x->is_constant())
+    // std::clog << bdd->var_table[x->var-1].label;
+    // std::clog << " & ";
+    // if( y!=NULL && !y->is_constant())
+    // std::clog << bdd->var_table[y->var-1].label;
+    // std::clog << std::endl;
 
     // 両方定数ノード
     if(x->is_constant() && y->is_constant()) {
@@ -279,7 +277,7 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y) {
             if( xh == NULL) {
                 u = NULL;
             } else {
-                u=bdd->make(x->var, apply(fkt, y, xh));  
+                u=bdd->make(x->var,apply(fkt, xh, y));  
             }
         }
     } else /* x->var() > y->var() */ {
