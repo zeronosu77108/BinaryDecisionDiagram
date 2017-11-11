@@ -98,6 +98,62 @@ void BDD::DumpDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) co
     }
 }
 
+void BDD::DumpNNDot(std::ostream &out) const {
+    std::vector<Node *> done;
+
+    out << "digraph BDD {" << std::endl;
+
+    out << "center = true;" << std::endl;
+    out << "margin = 0;" << std::endl;
+
+    out << "  { node [shape=box,fontsize=24]; \"1\"; }" << std::endl
+        << std::endl;
+
+    std::string str;
+    bool f = false;
+    for( auto v : var_table ) {
+        if(f){
+            str += "->";
+        }
+        f=true;
+        out << v.label << "[style=invis];";
+        str += v.label;
+    }
+    out << std::endl << str << "[style=invis]" << std::endl;;
+
+    for(auto root : roots){
+        DumpNNDot_2(out,root,&done);
+    }
+
+    out << "}" << std::endl;
+}
+
+void BDD::DumpNNDot_2(std::ostream &out,Node *node, std::vector<Node *> *done ) const {
+    auto itr = std::find(done->begin(), done->end(), node);
+    if(node->is_constant()){
+        return;
+    }
+
+    if( itr == done->end() ) {
+        done->push_back(node);
+            out << node->node_number << "[label=\""
+                << var_table[node->var-1].label << "\"]"
+                << std::endl;
+
+            out << "{rank=same; " << var_table[node->var-1].label << "; "
+                << node->node_number << ";}"
+                << std::endl;
+
+        for(auto ch : node->child) {
+            if(ch != NULL) {
+                out << node->node_number << "->"
+                    << ch->node_number
+                    << std::endl; 
+                DumpNNDot_2(out,ch, done);
+            }
+        }
+    }
+}
 
 void BDD::DumpPath(std::ostream &out) const {
 
@@ -291,7 +347,34 @@ Node* apply(bool (*fkt)(bool x, bool y), Node *x, Node *y, bool flag) {
         u->high->add_parent(u);
     }   
 
-    std::clog << "u:" << u << std::endl;
     return u;
 }
 
+std::vector<Node *> BDD::get_non_negative(Node *x, bool flag) {
+    std::vector<Node *> list1;
+    std::vector<Node *> list2;
+    std::vector<Node *> v;
+    if( ! x->is_constant() ) {
+
+        if( flag ) {
+            std::clog << "add root : " << var_table[x->var-1].label << std::endl;
+            add_root(x);
+        }
+
+        if(x->high != NULL ){
+            list1 = get_non_negative(x->high,false);
+        } 
+        if(x->low != NULL ){
+            list2 = get_non_negative(x->low,flag);
+        } 
+        list2.push_back(x);
+    } else if(x->is_true()) {
+        v.push_back(x);
+        return v;
+    } else if(x->is_false()) {
+        return v;
+    }
+
+    x->child = list1;
+    return list2;
+}

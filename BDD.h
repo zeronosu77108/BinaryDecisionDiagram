@@ -19,6 +19,7 @@ class Node {
         inline ~Node();
         Node *low; 
         Node *high;
+        std::vector<Node *> child;
         inline Node(
                 class BDD *_bdd,
                 unsigned int _var,
@@ -59,6 +60,9 @@ class BDD {
 
         Node* Var(const std::string &label);
 
+        void DumpNNDot(std::ostream &out) const;
+        void DumpNNDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
+
         void DumpDot(std::ostream &out) const;
         void DumpDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
         void DumpPath(std::ostream &out) const;
@@ -69,6 +73,7 @@ class BDD {
         void _DumpCountPath(Node *node, int *n) const;
         void DumpTailDot(std::ostream &out) const;
         void DumpTailDot2(std::ostream &out, Node *node, std::vector<Node *> *done, const Node *child) const;
+        std::vector<Node *> get_non_negative(Node *x, bool flag);
 
         inline const BDD &True();
         inline const BDD &False();

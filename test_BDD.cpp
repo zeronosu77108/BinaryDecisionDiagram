@@ -67,11 +67,13 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     for(int i=1; i<ors.size(); i++){
         final = And(final, ors[i]);
     }
+
+    bdd.get_non_negative(final,true);
+
     // bdd.DumpPass(out);
-    // bdd.Tail_Pass(out);
-    bdd.DumpCountPath(out);
-    // bdd.Tail_DumpDot(out);
+    // bdd.DumpCountPath(out);
     // bdd.DumpDot(out);
+    bdd.DumpNNDot(out);
 }
 
 
@@ -112,7 +114,8 @@ int main(int argc, char *argv[], char *envp[]) {
     std::vector< std::vector<std::string> >  exp;
     std::vector<std::string> orders;
     // std::vector<std::string> orders = {"P3","P4","P1","P9","P2","P10","P5","P6","P8","P7"};
-    orders = {"P2","P9","P6","P7","P3","P10","P4","P1","P5","P8"};
+    // orders = {"P2","P1","P3","P4"};
+    orders = {"P1","P2","P3","P4","P5","P6","P7","P8"};
 
     int n = 10;
     std::string str = argv[1];
