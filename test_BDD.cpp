@@ -69,11 +69,26 @@ void test(std::vector<std::string> orders, std::vector< std::vector<std::string>
     }
 
     bdd.get_non_negative(final,true);
+    
+    std::chrono::system_clock::time_point start, end;
+    start = std::chrono::system_clock::now();
 
-    // bdd.DumpPass(out);
+    // bdd.DumpNNDot(out);
+    bdd.DumpNNPath(out);
+
+
+    // bdd.DumpPath(out);
     // bdd.DumpCountPath(out);
     // bdd.DumpDot(out);
-    bdd.DumpNNDot(out);
+
+
+    end = std::chrono::system_clock::now();
+
+    double elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start).count();
+    std::clog << " " << elapsed << "ms" << std::endl;;
+
+    
+
 }
 
 
@@ -128,8 +143,8 @@ int main(int argc, char *argv[], char *envp[]) {
 
 
     // count_path(n,exp,std::cout);
-    test(orders,exp,outputfile);
-    // mes_time(orders, exp, outputfile, timefile);
+    // test(orders,exp,outputfile);
+    mes_time(orders, exp, outputfile, timefile);
 
 }
 

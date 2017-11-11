@@ -62,6 +62,8 @@ class BDD {
 
         void DumpNNDot(std::ostream &out) const;
         void DumpNNDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;
+        void DumpNNPath(std::ostream &out) const;
+        void DumpNNPath_2(std::ostream &out, Node *node, std::string str) const;
 
         void DumpDot(std::ostream &out) const;
         void DumpDot_2(std::ostream &out, Node *node, std::vector<Node *> *done) const;

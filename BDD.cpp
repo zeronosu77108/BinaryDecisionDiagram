@@ -165,7 +165,7 @@ void BDD::DumpPath(std::ostream &out) const {
 void BDD::DumpPath_2(std::ostream &out, Node *node, std::string str) const {
     if(node->low!=NULL) {
         DumpPath_2(out, node->low, str);
-        // Path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
+        // path_2(out, node->low, done, var_table[node->var-1].label + " " + str);
     }
     if(node->high!=NULL) {
         DumpPath_2(out, node->high,
@@ -176,6 +176,27 @@ void BDD::DumpPath_2(std::ostream &out, Node *node, std::string str) const {
     if(node->node_number==1)
         out << str << std::endl;
 }
+
+void BDD::DumpNNPath(std::ostream &out) const {
+
+    for(auto root : roots) {
+        DumpNNPath_2(out, root, "");
+    }
+}
+
+void BDD::DumpNNPath_2(std::ostream &out, Node *node, std::string str) const {
+    if(node->is_constant()){
+        out << str << std::endl;
+        return;
+    }
+    for(auto ch : node->child) {
+        if(ch != NULL) {
+            DumpNNPath_2(out,ch, var_table[node->var-1].label + " " + str);
+        }
+    }
+
+}
+
 void BDD::DumpCountPath(std::ostream &out) const {
     int n = 0;
     for(auto root : roots) {
@@ -357,7 +378,7 @@ std::vector<Node *> BDD::get_non_negative(Node *x, bool flag) {
     if( ! x->is_constant() ) {
 
         if( flag ) {
-            std::clog << "add root : " << var_table[x->var-1].label << std::endl;
+            // std::clog << "add root : " << var_table[x->var-1].label << std::endl;
             add_root(x);
         }
 
